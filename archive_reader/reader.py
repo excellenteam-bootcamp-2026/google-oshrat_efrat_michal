@@ -2,18 +2,17 @@ import zipfile
 import time
 from pathlib import Path
 from collections import defaultdict
+import re
 
 from models.sentence import Sentence
 from models.occurrence import Occurrence
+from models.corpus import Corpus
 
 
 def normalize_text(text: str) -> str:
-    """
-    Basic normalization:
-    - lowercase
-    - remove extra spaces
-    """
-    return " ".join(text.lower().split())
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    return " ".join(text.split())
 
 
 def read_archive(archive_path: str) -> list[Sentence]:
@@ -121,6 +120,48 @@ def build_word_index(
             batch_start = time.perf_counter()
 
     return dict(word_index)
+
+
+def build_corpus(archive_path: str) -> Corpus:
+    """
+    קורא את הארכיון, בונה את האינדקס
+    ומציג את זמני האתחול.
+    """
+    total_start = time.perf_counter()
+
+    # שלב 1 — קריאת הארכיון
+    read_start = time.perf_counter()
+
+    sentence_list = read_archive(archive_path)
+
+    read_time = time.perf_counter() - read_start
+
+    print()
+    print("Finished reading archive")
+    print(f"Total sentences: {len(sentence_list):,}")
+    print(f"Archive reading time: {read_time:.2f} seconds")
+
+    # שלב 2 — בניית האינדקס
+    index_start = time.perf_counter()
+
+    word_index = build_word_index(sentence_list)
+
+    index_time = time.perf_counter() - index_start
+    total_time = time.perf_counter() - total_start
+
+    print("\n--- Startup Performance ---")
+    print(f"Archive reading time: {read_time:.2f} seconds")
+    print(f"Index building time: {index_time:.2f} seconds")
+    print(f"Total startup time: {total_time:.2f} seconds")
+    print(f"Unique words: {len(word_index):,}")
+
+    return Corpus(
+        sentences={
+            sentence.id: sentence
+            for sentence in sentence_list
+        },
+        word_index=word_index
+    )
 
 
 if __name__ == "__main__":
