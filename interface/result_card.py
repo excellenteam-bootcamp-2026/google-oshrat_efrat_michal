@@ -34,9 +34,10 @@ class ResultCard(QFrame):
         number_label = QLabel(str(index))
         number_label.setObjectName("resultNumber")
         number_label.setFixedSize(30, 30)
+        number_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(
             number_label,
-            alignment=Qt.AlignmentFlag.AlignTop
+            alignment=Qt.AlignmentFlag.AlignVCenter
         )
 
         information_layout = QVBoxLayout()
@@ -44,7 +45,7 @@ class ResultCard(QFrame):
 
         sentence_label = QLabel(result.completed_sentence)
         sentence_label.setObjectName("sentence")
-        sentence_label.setWordWrap(True)
+        sentence_label.setWordWrap(False)
         sentence_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
         )
@@ -54,7 +55,7 @@ class ResultCard(QFrame):
             f"{result.source_text} · offset {result.offset}"
         )
         source_label.setObjectName("sourceText")
-        source_label.setWordWrap(True)
+        source_label.setWordWrap(False)
         source_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
         )
@@ -68,5 +69,5 @@ class ResultCard(QFrame):
 
         main_layout.addWidget(
             score_label,
-            alignment=Qt.AlignmentFlag.AlignTop
+            alignment=Qt.AlignmentFlag.AlignVCenter
         )

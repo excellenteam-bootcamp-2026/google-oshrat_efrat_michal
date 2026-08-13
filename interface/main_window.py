@@ -1,13 +1,12 @@
 from collections.abc import Callable
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
-    QMessageBox,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -31,6 +30,9 @@ class MainWindow(QMainWindow):
 
         self.get_completions = get_completions
         self.current_sentence = ""
+        self._toast_timer = QTimer(self)
+        self._toast_timer.setSingleShot(True)
+        self._toast_timer.timeout.connect(self._hide_toast)
 
         self.configure_window()
         self.create_interface()
@@ -53,6 +55,12 @@ class MainWindow(QMainWindow):
             self.create_main_content(),
             stretch=1
         )
+
+        self.toast_label = QLabel(self)
+        self.toast_label.setObjectName("toast")
+        self.toast_label.setWordWrap(True)
+        self.toast_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.toast_label.hide()
 
     def create_header(self) -> QFrame:
         header = QFrame()
@@ -200,6 +208,12 @@ class MainWindow(QMainWindow):
         self.results_area.hide()
 
         scroll_area.setWidgetResizable(True)
+        scroll_area.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
         scroll_area.setFrameShape(
             QFrame.Shape.NoFrame
         )
@@ -225,13 +239,16 @@ class MainWindow(QMainWindow):
 
         if user_input.strip() == "#":
             self.reset_sentence()
+            self.show_toast(
+                "Started a new sentence.",
+                kind="info"
+            )
             return
 
         if not user_input.strip():
-            QMessageBox.warning(
-                self,
-                "Missing text",
-                "Please enter some text before searching."
+            self.show_toast(
+                "Please enter some text before searching.",
+                kind="warning"
             )
             return
 
@@ -255,10 +272,9 @@ class MainWindow(QMainWindow):
             self.display_results(results)
 
         except Exception as error:
-            QMessageBox.critical(
-                self,
-                "Search error",
-                f"An error occurred:\n{error}"
+            self.show_toast(
+                f"Search failed: {error}",
+                kind="error"
             )
 
     def display_results(
@@ -271,10 +287,9 @@ class MainWindow(QMainWindow):
             self.results_header.hide()
             self.results_area.hide()
 
-            QMessageBox.information(
-                self,
-                "No results",
-                "No completions were found."
+            self.show_toast(
+                "No completions were found.",
+                kind="info"
             )
             return
 
@@ -301,6 +316,7 @@ class MainWindow(QMainWindow):
 
         self.results_header.show()
         self.results_area.show()
+        self.results_widget.adjustSize()
 
     def reset_sentence(self) -> None:
         self.current_sentence = ""
@@ -316,6 +332,53 @@ class MainWindow(QMainWindow):
         self.clear_results()
 
         self.search_input.setFocus()
+        self.show_toast(
+            "New sentence is ready.",
+            kind="info"
+        )
+
+    def show_toast(
+        self,
+        message: str,
+        kind: str = "info"
+    ) -> None:
+        self._toast_timer.stop()
+
+        self.toast_label.setProperty("kind", kind)
+        self.toast_label.style().unpolish(self.toast_label)
+        self.toast_label.style().polish(self.toast_label)
+
+        self.toast_label.setText(message)
+        self.toast_label.adjustSize()
+
+        max_width = min(
+            max(320, self.width() - 80),
+            560,
+        )
+        self.toast_label.setMaximumWidth(max_width)
+        self.toast_label.adjustSize()
+
+        self._position_toast()
+        self.toast_label.show()
+        self.toast_label.raise_()
+
+        self._toast_timer.start(2200)
+
+    def _hide_toast(self) -> None:
+        self.toast_label.hide()
+
+    def _position_toast(self) -> None:
+        if not hasattr(self, "toast_label"):
+            return
+
+        self.toast_label.move(
+            (self.width() - self.toast_label.width()) // 2,
+            18,
+        )
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._position_toast()
 
     def clear_results(self) -> None:
         while self.results_layout.count():

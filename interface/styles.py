@@ -169,6 +169,28 @@ QLabel#secondaryText {
     color: #7A8494;
 }
 
+QLabel#toast {
+    color: #1E293B;
+    background-color: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QLabel#toast[kind="warning"] {
+    color: #92400E;
+    background-color: #FFFBEB;
+    border-color: #FDE68A;
+}
+
+QLabel#toast[kind="error"] {
+    color: #991B1B;
+    background-color: #FEF2F2;
+    border-color: #FECACA;
+}
+
 QFrame#resultCard {
     background-color: transparent;
     border: none;
