@@ -6,3 +6,5 @@ from models.sentence import Sentence
 class SearchResult:
     sentence: Sentence
     score: float
+    match_type: str = "exact"
+    error_position: int | None = None
