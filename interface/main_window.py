@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from interface.mock_search import AutoCompleteData
+from interface.autocomplete_data import AutoCompleteData
 from interface.result_card import ResultCard
 
 

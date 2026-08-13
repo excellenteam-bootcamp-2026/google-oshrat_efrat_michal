@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 
 # בעת החיבור הסופי יש לייבא את AutoCompleteData
 # מהקובץ המשותף של הצוות.
-from interface.mock_search import AutoCompleteData
+from interface.autocomplete_data import AutoCompleteData
 
 
 class ResultCard(QFrame):
